@@ -1,13 +1,12 @@
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 def k_means(dataset, cluster_size):
-    vec = DictVectorizer()
-    dataset_vectorized = vec.fit_transform(dataset).toarray()
-    X = np.array(dataset_vectorized)
+    X = np.array(dataset)
+    print("Running k means with cluster size - " + str(cluster_size))
     kmeans = KMeans(n_clusters=cluster_size, random_state=0).fit(X)
     return kmeans
 
@@ -31,10 +30,14 @@ def stratified_sampling(dataset, cluster_size):
 
 
 def elbow(data):
+    print("Starting k means !")
     __k_range = range(1, 10)
+    print("Starting k means")
     __k_means = [k_means(data, cluster_size) for cluster_size in __k_range]
+    print("Ran k means")
     __mse = {}
     for X in __k_means:
+        print("Processing in for loop ..... ")
         __mse[X.n_clusters] = X.inertia_
     plot_mse(__mse)
     return
@@ -60,17 +63,18 @@ def format_dataset(dataset):
 
 def label_categorical_data(dataset, category_meta_):
     output = []
-    for pokemon in dataset:
-        pokemon_row_ = []
-        for feature in pokemon.keys():
+    for entry in dataset:
+        __entry = []
+        for feature in entry.keys():
             if feature in category_meta_.keys():
                 feature_unique = category_meta_[feature]
-                pokemon_row_.append(float(feature_unique.index(pokemon[feature])))
+                __entry.append(feature_unique.index(entry[feature]))
             else:
-                if pokemon[feature].__class__.__name__ == 'str' and len(pokemon[feature]) == 0:
-                    pokemon_row_.append(999999)
+                if entry[feature].__class__.__name__ == 'str' and len(entry[feature]) == 0:
+                    __entry.append(999999)
                 else:
-                    pokemon_row_.append(float(pokemon[feature]))
-        output.append(pokemon_row_)
+                    __entry.append(entry[feature])
+        output.append(__entry)
+        # print(len(output))
     return output
 

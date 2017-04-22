@@ -22,10 +22,11 @@ DBS_NAME = 'Accidents'
 RAW_COLLECTION = 'Collision'
 
 FIELDS = {"Attack": True}
-CATEGORICAL_ATTRIBUTES = ["Name", "Type_1", "Type_2",
-                          "isLegendary", "Color", "hasGender",
-                          "Egg_Group_1", "Egg_Group_2", "hasMegaEvolution",
-                          "Body_Style", "Generation", "Catch_Rate"]
+CATEGORICAL_ATTRIBUTES = ["DATE", "TIME", "BOROUGH", "ZIP CODE", "ON STREET NAME", "VEHICLE TYPE",
+                          "CROSS STREET NAME", "OFF STREET NAME", "CONTRIBUTING FACTOR VEHICLE 1",
+                          "CONTRIBUTING FACTOR VEHICLE 2", "CONTRIBUTING FACTOR VEHICLE 3", "CONTRIBUTING FACTOR VEHICLE 4",
+                          "CONTRIBUTING FACTOR VEHICLE 5", "VEHICLE TYPE CODE 1", "VEHICLE TYPE CODE 2", "VEHICLE TYPE CODE 3", "VEHICLE TYPE CODE 4",
+                          "VEHICLE TYPE CODE 5"]
 
 # This has been computed from by optimizing K-Means with elbow method.
 ELBOW_K_SIZE = 7
@@ -90,15 +91,20 @@ def insert_stratified_samples_to_mongo(data):
 def plot_k_means_elbow():
     print("K-means optimization using elbow method")
     dataset = data_collection.find({}, {"_id": False})
+    print("Read data formatting it.")
     dataset_formatted = format_dataset(dataset)
-    elbow(dataset_formatted)
+    print("Finished formatting data")
+    labelled_dataset = np.array(label_categorical_data(dataset_formatted, categoric_meta_))
+    print("Labelled Data done ! ")
+    elbow(labelled_dataset)
 
 
 @manager.command
 def do_stratified_sampling():
     dataset = data_collection.find({}, {"_id": False})
     dataset_formatted = format_dataset(dataset)
-    sampled_cluster = stratified_sampling(dataset_formatted, ELBOW_K_SIZE)
+    labelled_dataset = np.array(label_categorical_data(dataset_formatted, categoric_meta_))
+    sampled_cluster = stratified_sampling(labelled_dataset, ELBOW_K_SIZE)
     insert_stratified_samples_to_mongo(sampled_cluster)
 
 
