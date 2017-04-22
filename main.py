@@ -22,26 +22,30 @@ DBS_NAME = 'Accidents'
 RAW_COLLECTION = 'Collision'
 
 FIELDS = {"Attack": True}
-CATEGORICAL_ATTRIBUTES = ["DATE", "TIME", "BOROUGH", "ZIP CODE", "ON STREET NAME", "VEHICLE TYPE",
+CATEGORICAL_ATTRIBUTES = ["DATE", "TIME", "BOROUGH", "ZIP CODE", "ON STREET NAME",
                           "CROSS STREET NAME", "OFF STREET NAME", "CONTRIBUTING FACTOR VEHICLE 1",
                           "CONTRIBUTING FACTOR VEHICLE 2", "CONTRIBUTING FACTOR VEHICLE 3", "CONTRIBUTING FACTOR VEHICLE 4",
                           "CONTRIBUTING FACTOR VEHICLE 5", "VEHICLE TYPE CODE 1", "VEHICLE TYPE CODE 2", "VEHICLE TYPE CODE 3", "VEHICLE TYPE CODE 4",
                           "VEHICLE TYPE CODE 5"]
 
 # This has been computed from by optimizing K-Means with elbow method.
-ELBOW_K_SIZE = 7
+ELBOW_K_SIZE = 3
 
 connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
 db = connection[DBS_NAME]
 data_collection = db[RAW_COLLECTION]
 
-categoric_meta_ = {}
-for category in CATEGORICAL_ATTRIBUTES:
-    category_uniques = data_collection.distinct(category)
-    categoric_meta_[category] = category_uniques
 
 record = data_collection.find_one({}, {"_id": False})
 categories = list(record.keys())
+
+categoric_meta_ = {}
+for category in CATEGORICAL_ATTRIBUTES:
+    category_uniques = data_collection.distinct(category)
+    categoric_meta_[category] = {
+        'uniques': category_uniques,
+        'feature_index': categories.index(category)
+    }
 
 
 def response_from_pymongo(cursor_dataset):
@@ -103,8 +107,7 @@ def plot_k_means_elbow():
 def do_stratified_sampling():
     dataset = data_collection.find({}, {"_id": False})
     dataset_formatted = format_dataset(dataset)
-    labelled_dataset = np.array(label_categorical_data(dataset_formatted, categoric_meta_))
-    sampled_cluster = stratified_sampling(labelled_dataset, ELBOW_K_SIZE)
+    sampled_cluster = stratified_sampling(dataset_formatted, ELBOW_K_SIZE, categoric_meta_)
     insert_stratified_samples_to_mongo(sampled_cluster)
 
 

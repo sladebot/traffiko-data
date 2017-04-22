@@ -11,10 +11,10 @@ def k_means(dataset, cluster_size):
     return kmeans
 
 
-def stratified_sampling(dataset, cluster_size):
-    kmeans = k_means(dataset, cluster_size)
+def stratified_sampling(dataset, cluster_size, categoric_meta_):
+    labelled_dataset = np.array(label_categorical_data(dataset, categoric_meta_))
+    kmeans = k_means(labelled_dataset, cluster_size)
     cluster_with_data_index_list = {i: np.where(kmeans.labels_ == i)[0] for i in range(kmeans.n_clusters)}
-    sampled_cluster = {}
     decimated_data = []
     count = 0
     for cluster_data_index in cluster_with_data_index_list.keys():
@@ -23,8 +23,12 @@ def stratified_sampling(dataset, cluster_size):
         sampled_labels = np.random.choice(values, int(len(values) * 0.4)).flatten().tolist()
         data = []
         for i in sampled_labels:
+            # change dataset labels to real data from categoric meta
+            # for feature_name in categoric_meta_.keys():
+            #     _feature_index = categoric_meta_[feature_name]['feature_index']
+            #     label_value = int(dataset[i][_feature_index])
+            #     dataset[i][_feature_index] = categoric_meta_[feature_name]['uniques'][label_value]
             data.append(dataset[i])
-        sampled_cluster[str(cluster_data_index)] = data
         decimated_data = decimated_data + data
     return decimated_data
 
@@ -67,7 +71,7 @@ def label_categorical_data(dataset, category_meta_):
         __entry = []
         for feature in entry.keys():
             if feature in category_meta_.keys():
-                feature_unique = category_meta_[feature]
+                feature_unique = category_meta_[feature]['uniques']
                 __entry.append(feature_unique.index(entry[feature]))
             else:
                 if entry[feature].__class__.__name__ == 'str' and len(entry[feature]) == 0:
@@ -75,6 +79,6 @@ def label_categorical_data(dataset, category_meta_):
                 else:
                     __entry.append(entry[feature])
         output.append(__entry)
-        # print(len(output))
+        print(len(output))
     return output
 
