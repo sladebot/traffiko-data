@@ -21,7 +21,7 @@ def stratified_sampling(dataset, cluster_size):
     for cluster_data_index in cluster_with_data_index_list.keys():
         values = cluster_with_data_index_list[cluster_data_index]
         count = count + len(values)
-        sampled_labels = np.random.choice(values, int(len(values) * 0.6)).flatten().tolist()
+        sampled_labels = np.random.choice(values, int(len(values) * 0.4)).flatten().tolist()
         data = []
         for i in sampled_labels:
             data.append(dataset[i])

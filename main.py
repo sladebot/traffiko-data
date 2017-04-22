@@ -1,16 +1,12 @@
-from flask import Flask, request, render_template
+from flask import Flask
 from flask_script import Manager, Server
-from flask_assets import Environment, Bundle
-from flask_bower import Bower
 from pymongo import MongoClient
 import numpy as np
 from bson.json_util import dumps
-import json
 
 
 from lib.sampling import stratified_sampling, elbow, label_categorical_data, format_dataset
 from lib.decomposition import pca_reduction, mds_reduction, draw_pca_plot, plot_scree
-
 
 
 app = Flask(__name__, template_folder='templates')
@@ -22,8 +18,8 @@ server = Server(host="0.0.0.0", port=5000)
 
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
-DBS_NAME = 'vs-asg-02'
-RAW_COLLECTION = 'pokemons'
+DBS_NAME = 'Accidents'
+RAW_COLLECTION = 'Collision'
 
 FIELDS = {"Attack": True}
 CATEGORICAL_ATTRIBUTES = ["Name", "Type_1", "Type_2",
@@ -52,17 +48,6 @@ def response_from_pymongo(cursor_dataset):
     for data in cursor_dataset:
         response.append(data)
     return response
-
-
-def insert_random_sampled_to_mongo(data):
-    collection = db["random_sampled"]
-    collection.drop()
-    for document in data:
-        try:
-            collection.insert(document)
-        except:
-            pass
-            # print("Found duplicate records - ")
 
 
 def insert_pca_to_mongo(top_three_attributes, type):
@@ -107,15 +92,6 @@ def plot_k_means_elbow():
     dataset = data_collection.find({}, {"_id": False})
     dataset_formatted = format_dataset(dataset)
     elbow(dataset_formatted)
-
-
-@manager.command
-def do_random_sampling():
-    dataset = data_collection.find({}, {"_id": False})
-    formatted_data = format_dataset(dataset)
-    random_sampled_indices = np.random.randint(len(formatted_data), size=int(len(formatted_data)*0.6))
-    sampled_data = np.take(np.array(formatted_data), random_sampled_indices)
-    insert_random_sampled_to_mongo(sampled_data.tolist())
 
 
 @manager.command
