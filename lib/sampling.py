@@ -20,7 +20,7 @@ def stratified_sampling(dataset, cluster_size, categoric_meta_):
     for cluster_data_index in cluster_with_data_index_list.keys():
         values = cluster_with_data_index_list[cluster_data_index]
         count = count + len(values)
-        sampled_labels = np.random.choice(values, int(len(values) * 0.4)).flatten().tolist()
+        sampled_labels = np.random.choice(values, int(len(values) * 0.2)).flatten().tolist()
         data = []
         for i in sampled_labels:
             # change dataset labels to real data from categoric meta

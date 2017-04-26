@@ -52,8 +52,10 @@ def mds_reduction(dataset, type):
 
 
 def draw_pca_plot(dataset):
+    print("plotting")
     np_dataset = np.array(dataset)
-    pca = scale_data(np_dataset, 15)["pca"]
+    pca = scale_data(np_dataset, 28)["pca"]
+    print("scaled data and plotting ....")
     plt.plot(pca.explained_variance_, '--o')
     plt.axhline(y=1, color='r')
     plt.axis('tight')

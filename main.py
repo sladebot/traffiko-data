@@ -113,7 +113,7 @@ def do_stratified_sampling():
 
 @manager.command
 def do_pca():
-    types = ["random", "stratified"]
+    types = ["stratified"]
     for type in types:
         dataset = db[type + "_sampled"].find({}, {"_id": False})
         labelled_dataset = label_categorical_data(dataset, categoric_meta_)
@@ -147,7 +147,9 @@ def stratified_plot_scree_plot():
     dataset = db["stratified_sampled"].find({}, {"_id": False})
     labelled_dataset = label_categorical_data(dataset, categoric_meta_)
     pca_data = pca_reduction(labelled_dataset, categories)
+    print("Done with pca")
     pca_squared_loadings = pca_data["pca_squared_loadings"]
+    print("plotting scree plot")
     plot_scree(pca_squared_loadings, categories)
 
 @manager.command
